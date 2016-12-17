@@ -1,18 +1,19 @@
-board = range(0, 9)
+from subprocess import call
+
+board = range(9)
 player = {1: 'X', 2: 'O'}
-current_player = 1
+current_player = 2
 winner_sequences = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]]
 
-def draw_bord():
+def draw_board():
     print '''
     _{}_|_{}_|_{}_
     _{}_|_{}_|_{}_
      {} | {} | {}
     '''.format(board[0],board[1],board[2],board[3],board[4],board[5],board[6],board[7],board[8])
 
-def print_remaining_positions():
-    remaining_positions = map(str, [ e for e in board if type(e) is int ])
-    print 'Remaining positions: {}'.format(', '.join(remaining_positions))
+def get_remaining_positions():
+    return map(str, [ e for e in board if type(e) is int ])
 
 def fill_board(position, player_assign):
     board[position] = player_assign
@@ -32,16 +33,29 @@ def is_winner(current_player):
     return False
     
 def show_results():
-    print 'Results'
+    print '\n\nResults'
+    if is_winner(current_player):
+        print 'Winner: Player {}'.format(current_player)
+    elif is_board_fullfilled():
+        print 'Draw!'
 
 
 print 'Welcome to Tic Tac Toe in Python'
 
 while not is_endgame(current_player):
-    draw_bord()
-    print_remaining_positions()
-    position = int(raw_input('Player {}: '.format(current_player)))
-    fill_board(position, player[current_player])
     current_player = 2 if current_player == 1 else 1
+    # call(['clear'])
+    draw_board()
+    remaining_positions = get_remaining_positions()
+    print 'Remaining positions: {}'.format(', '.join(remaining_positions))
+    try:
+        position = int(raw_input('Player {}: '.format(current_player)))
+        if str(position) not in remaining_positions:
+            print 'Please, choose one of the remaining positions'
+            continue
+    except ValueError:
+        print 'Invalid number, try again'
+        continue
+    fill_board(position, player[current_player])
 else:
     show_results()
