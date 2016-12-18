@@ -4,7 +4,6 @@ import random
 
 class TicTacToe:
     def __init__(self):
-        self.play_on = 'y'
         self.board = range(9)
         self.player = {1: 'x', 2: 'o'}
         self.current_player = random.randint(1,2)
@@ -56,10 +55,10 @@ class TicTacToe:
                 return True
         return False
 
+play_on = 'y'
 
-game = TicTacToe()
-
-while game.play_on == 'y':
+while play_on == 'y':
+    game = TicTacToe()
     while True:
         os.system('clear')
 
@@ -93,4 +92,4 @@ while game.play_on == 'y':
     os.system('clear')
     game.draw_board()
     game.print_messages()
-    game.play_on = raw_input('End game. Play again (y/n): ')
+    play_on = raw_input('End game. Play again (y/n): ')
