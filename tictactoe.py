@@ -1,12 +1,18 @@
+from __future__ import print_function
+import os
+import random
+
 class TicTacToe:
     def __init__(self):
+        self.play_on = 'y'
         self.board = range(9)
         self.player = {1: 'x', 2: 'o'}
-        self.current_player = 2
+        self.current_player = random.randint(1,2)
         self.winning_sequences = [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]]
+        self.messages = []
 
     def draw_board(self):
-        print '''
+        print ('''
         _{}_|_{}_|_{}_
         _{}_|_{}_|_{}_
          {} | {} | {}
@@ -20,7 +26,14 @@ class TicTacToe:
             self.board[6],
             self.board[7],
             self.board[8]
-        )
+        ))
+
+    def add_message(self, msg):
+        self.messages += [msg]
+
+    def print_messages(self):
+        for i, msg in enumerate(self.messages):
+            print(self.messages.pop(i))
     
     def toggle_player(self):
         self.current_player = 2 if self.current_player == 1 else 1
@@ -32,48 +45,52 @@ class TicTacToe:
     def fill_board(self, position, player_assign):
         self.board[position] = player_assign
 
-    def is_running(self):
-        return not game.is_board_fullfilled() and not game.is_current_player_winner()
-
     def is_board_fullfilled(self):
         return all(type(e) is str for e in self.board)
 
     def is_current_player_winner(self):
-        signal = self.player[self.current_player]
+        marker = self.player[self.current_player]
         for sequence in self.winning_sequences:
             board_seq = [ e for i, e in enumerate(self.board) if i in sequence ]
-            if all(e == signal for e in board_seq):
+            if all(e == marker for e in board_seq):
                 return True
         return False
-        
-    def show_results(self):
-        print '\n\nResults'
-        if self.is_current_player_winner():
-            print 'Winner: Player {}'.format(self.current_player)
-        elif self.is_board_fullfilled():
-            print 'Draw!' 
 
-
-print 'Welcome to Tic Tac Toe in Python'
 
 game = TicTacToe()
 
-while game.is_running():
-    player = game.toggle_player()
-    game.draw_board()
+while game.play_on == 'y':
+    while True:
+        os.system('clear')
 
-    remaining_positions = game.get_remaining_positions()
-    print 'Remaining positions: {}'.format(', '.join(remaining_positions))
+        print('Welcome to Tic Tac Toe in Python')
+        
+        player = game.toggle_player()
+        game.draw_board()
+        game.print_messages()
 
-    try:
-        position = int(raw_input('Player {}: '.format(game.current_player)))
-        if str(position) not in remaining_positions:
-            print 'Please, choose one of the remaining positions'
+        remaining_positions = game.get_remaining_positions()
+        print('Remaining positions: {}'.format(', '.join(remaining_positions)))
+
+        try:
+            position = int(raw_input('Player {}: '.format(game.current_player)))
+            if str(position) not in remaining_positions:
+                game.add_message('Please, choose one of the remaining positions')
+                continue
+        except ValueError:
+            game.add_message('Invalid number, try again')
             continue
-    except ValueError:
-        print 'Invalid number, try again'
-        continue
 
-    game.fill_board(position, player)
-else:
-    game.show_results()
+        game.fill_board(position, player)
+
+        if game.is_current_player_winner():
+            game.add_message('Winner: Player {}'.format(game.current_player))
+            break
+        elif game.is_board_fullfilled():
+            game.add_message('Draw!')
+            break 
+
+    os.system('clear')
+    game.draw_board()
+    game.print_messages()
+    game.play_on = raw_input('End game. Play again (y/n): ')
