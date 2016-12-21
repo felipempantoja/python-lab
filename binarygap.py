@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 #This program finds the biggest sequence of zeroes, ONLY those surrounded by ones
 
 import os
