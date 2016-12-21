@@ -12,3 +12,10 @@ Just a bunch of python code to learn a little bit this nice language...
 - [x] Clear output after every move, showing redrawn board
 - [x] Offer new game after current's end
 - [ ] Refactoring
+
+
+## Binary Gap
+> Spoiler alert: If you did not solve this algorithm yet, I suggest you try there before look at my code
+
+- [x] Pythonic version (lots of syntatic suggars to reduce code)
+- [x] Agnostic version (more verbose version, however using less magic builtin functions)
