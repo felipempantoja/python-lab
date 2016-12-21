@@ -95,3 +95,5 @@ while play_on == 'y':
     game.draw_board()
     game.print_messages()
     play_on = raw_input('End game. Play again (y/n): ')
+else:
+    print('Bye ;(')
