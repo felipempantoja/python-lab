@@ -29,7 +29,7 @@ Just a bunch of python code to learn a little bit this nice language...
 - [ ] Add more cards (there's just a single A-K spades sequence)
 - [x] Reward player after winning
 - [x] Show results in the end
-- [x] Clear output after every move, showing redrawn board
+- [ ] Clear output after every move, showing redrawn board
 - [x] Offer new game after current's end
 - [ ] Build the options 3 (Double Down), 4 (Split) and 5 (Surrender) on main menu
 - [ ] Refactoring messy code, duplicated ones and so on...
