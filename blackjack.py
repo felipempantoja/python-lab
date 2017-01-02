@@ -2,25 +2,36 @@
 # -*- coding: utf-8 -*- 
 
 from random import randint
-
+import os
 
 class Dealer(object):
     def __init__(self):
         self.current_cards = []
 
-    def show_hands(self):
-        print 'Dealer hands: {}, ? = ?'.format(self.current_cards[0])
+    def show_hands(self, end_game=False):
+        if end_game:
+            print 'Dealer hands: {} = {}'.format(self.current_cards, self.hands_length())
+        else:
+            print 'Dealer hands: {}, ? = ?'.format(self.current_cards[0])
 
     def hands_length(self):
-        length = reduce(lambda a,b: a+b, map(lambda x: x.length, self.current_cards))
-        while length > 21:
+        return reduce(lambda a,b: a+b, map(lambda x: x.length, self.current_cards))
+
+        '''length = reduce(lambda a,b: a+b, map(lambda x: x.length, self.current_cards))
+        while length > Game.max_length:
             for card in self.current_cards:
                 if card.alternative_length and card.alternative_length != card.length:
                     length -= card.alternative_length + card.length
                     card.replace_length()
                     continue
-            break
+            break'''
 
+    def play(self, pack, player):
+        while self.hands_length() < Game.max_length and self.hands_length() < player.hands_length() and pack.has_cards():
+            self.hit(pack)
+
+    def hit(self, pack):
+        self.current_cards.append(pack.pop_card())
 
 
 class Player(object):
@@ -102,6 +113,9 @@ class CardPack(object):
     def pop_card(self):
         return self.cards.pop(randint(0, len(self.cards) - 1))
 
+    def has_cards(self):
+        return len(self.cards) > 0
+
 
 class Game(object):
     max_length = 21
@@ -116,7 +130,8 @@ class Game(object):
     def open_menu(self):
         choice = -1
         while True:
-            print '\n(1) Hit'
+            print '\nThat is your turn, {}. '.format(self.player.name)
+            print '(1) Hit'
             print '(2) Stand'
             print '(3) Double Down'
             print '(4) Split'
@@ -124,19 +139,34 @@ class Game(object):
             try:
                 choice = int(raw_input('\nWhat do you want to do now? '))
 
+                # os.system('clear')
+                print choice
+
                 if choice not in (1,2,3,4,5):
                     continue
 
-                if choice == 1: self.player.hit(self.pack)
-                elif choice == 2: self.player.stand()
-                
-                self.player.show_hands()
-                self.dealer.show_hands()
-                
-                keep_going = self.calculate()
-                if not keep_going:
+                if choice == 1: 
+                    self.player.hit(self.pack)
+                    self.player.show_hands()
+                    self.dealer.show_hands()
+                    
+                    keep_playing = self.calculate()
+                    if not keep_playing:
+                        break
+                elif choice == 2: 
+                    self.dealer.play(self.pack, self.player)
+                    if self.player.hands_length() > self.dealer.hands_length() or self.dealer.hands_length() > Game.max_length:
+                        print 'You win!'
+                        self.pay_player()
+                    elif self.dealer.hands_length() == self.player.hands_length():
+                        print 'Draw!'
+                    else:
+                        print 'Busting!'
+                        print 'You lose.'
                     break
-            except ValueError:
+                
+            except ValueError as e:
+                print e
                 pass
     
     def calculate(self):
@@ -145,11 +175,13 @@ class Game(object):
             print 'You lose.'
             return False
         elif self.player.hands_length() == Game.max_length:
-            if self.player.hands_length() > self.dealer.hands_length():
+            self.dealer.play(self.pack, self.player)
+            if self.dealer.hands_length() == Game.max_length:
+                print 'Draw!'
+            else:
                 print 'You win!'
                 self.pay_player()
-            elif self.dealer.hands_length() == Game.max_length:
-                print 'Draw!'
+
             return False
         return True
 
@@ -172,6 +204,10 @@ game = Game()
 
 while True:
     game.start()
+
+    game.player.show_hands()
+    game.dealer.show_hands(end_game=True)
+
     if not game.player.play_on():
         print 'Thanks for playing!'
         break
