@@ -26,6 +26,7 @@ Just a bunch of python code to learn a little bit this nice language...
 - [x] Create the game
 - [x] Validate invalid inputs
 - [ ] Prepare Ace card as a two-optionated value
+- [ ] Add more cards (there's just a single A-K spades sequence)
 - [x] Reward player after winning
 - [x] Show results in the end
 - [x] Clear output after every move, showing redrawn board
