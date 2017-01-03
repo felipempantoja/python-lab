@@ -4,42 +4,68 @@
 from random import randint
 import os
 
-class Dealer(object):
+class Someone(object):
     def __init__(self):
         self.current_cards = []
-
-    def show_hands(self, end_game=False):
-        if end_game:
-            print 'Dealer hands: {} = {}'.format(self.current_cards, self.hands_length())
-        else:
-            print 'Dealer hands: {}, ? = ?'.format(self.current_cards[0])
-
-    def hands_length(self):
-        return reduce(lambda a,b: a+b, map(lambda x: x.length, self.current_cards))
-
-        '''length = reduce(lambda a,b: a+b, map(lambda x: x.length, self.current_cards))
-        while length > Game.max_length:
-            for card in self.current_cards:
-                if card.alternative_length and card.alternative_length != card.length:
-                    length -= card.alternative_length + card.length
-                    card.replace_length()
-                    continue
-            break'''
-
-    def play(self, pack, player):
-        while self.hands_length() < Game.max_length and self.hands_length() < player.hands_length() and pack.has_cards():
-            self.hit(pack)
 
     def hit(self, pack):
         self.current_cards.append(pack.pop_card())
 
+    def show_hands(self, end_game=False):
+        cards = self.current_cards[:] #making a copy of the original list
+        total_cards = len(cards)
+        hands_points = self.hands_points()
 
-class Player(object):
+        if type(self) == Dealer: current = 'DEALER'
+        else: current = 'PLAYER'
+        
+        if type(self) == Dealer and not end_game:
+            hands_points = '? + {}'.format(cards[1].points)
+            cards[0] = Card('?', '?', 0) 
+
+        print '\n==== {} HANDS ===='.format(current)
+
+        print ( '┌─────────┐' ) * total_cards
+        print ( '|{}       |'  * total_cards ).format( *[c.value.ljust(2, ' ') for c in cards] )
+        print ( '|         |' ) * total_cards
+        print ( '|         |' ) * total_cards
+        print ( '|    {}    |'  * total_cards ).format( *[c.symbol for c in cards] )
+        print ( '|         |' ) * total_cards
+        print ( '|         |' ) * total_cards
+        print ( '│       {}│'   * total_cards ).format( *[c.value.rjust(2, ' ') for c in cards] )
+        print ( '└─────────┘' ) * total_cards
+        
+        print 'Total points: {}'.format(hands_points)
+
+    def hands_points(self):
+        card_points = map(lambda x: x.points, self.current_cards)
+
+        lst_non_aces_points = filter(lambda x: type(x) is not tuple, card_points)
+        lst_aces_points = filter(lambda x: type(x) is tuple, card_points)
+
+        total_non_aces_points = sum(lst_non_aces_points)
+        total_aces_points = sum([ a[-1] for a in lst_aces_points ])
+
+        total_all = total_aces_points + total_non_aces_points
+
+        while total_all > Game.max_points and total_aces_points > 0:
+            total_all -= 10
+            total_aces_points -= 1
+
+        return total_all
+    
+
+class Dealer(Someone):
+    def play(self, pack, player):
+        while self.hands_points() < Game.max_points and self.hands_points() < player.hands_points() and pack.has_cards():
+            self.hit(pack)
+
+class Player(Someone):
     amount_money = 2500
 
     def __init__(self):
+        super(Player, self).__init__()
         self.name = raw_input('Player name: ')
-        self.current_cards = []
         self.current_bet = None
 
     def play_on(self):
@@ -62,50 +88,24 @@ class Player(object):
             except ValueError:
                 print 'Please type a numeric input'
 
-    def hit(self, pack):
-        self.current_cards.append(pack.pop_card())
-
     def stand(self):
         pass
 
-    def show_hands(self):
-        print '\nPlayer hands: {} = {}'.format(self.current_cards, self.hands_length())
-
-    def hands_length(self):
-        return reduce(lambda a,b: a+b, map(lambda x: x.length, self.current_cards))
-
 
 class Card(object):
-    def __init__(self, name, length, alternative_length=None):
-        self.name = name
-        self.length = length
-        self.alternative_length = alternative_length
-
-    def replace_length(self):
-        if self.alternative_length:
-            self.length = self.alternative_length
-
-    def __repr__(self):
-        return '{} - {}'.format(self.name, self.length)
+    def __init__(self, symbol, value, points):
+        self.symbol = symbol
+        self.value = value
+        self.points = points
 
 
 class CardPack(object):
     def __init__(self):
-        self.cards = [
-            Card('🂡', 11, 1),
-            Card('🂢', 2),
-            Card('🂣', 3),
-            Card('🂤', 4),
-            Card('🂥', 5),
-            Card('🂦', 6),
-            Card('🂧', 7),
-            Card('🂨', 8),
-            Card('🂩', 9),
-            Card('🂪', 10),
-            Card('🂫', 10),
-            Card('🂭', 10),
-            Card('🂮', 10)
-        ]
+        self.cards = []
+        for symbol in ['♠', '♦', '♥', '♣']:
+            self.cards += [ Card(symbol, 'A', (1, 11)) ]
+            self.cards += [ Card(symbol, str(points), points) for points in range(2, 11) ]
+            self.cards += [ Card(symbol, value, 10) for value in ['J', 'Q', 'K'] ]
 
     def distribute(self):
         return [self.pop_card(), self.pop_card()]
@@ -118,18 +118,20 @@ class CardPack(object):
 
 
 class Game(object):
-    max_length = 21
+    max_points = 21
 
     def __init__(self):
         self.dealer = Dealer()
         self.player = Player()
+        self.winner = None
 
-    def play_on(self):
-        return self.player.play_on() and self.player.has_money()
-
-    def open_menu(self):
+    def draw_ui(self):
         choice = -1
         while True:
+            os.system('clear')
+            self.player.show_hands()
+            self.dealer.show_hands()
+
             print '\nThat is your turn, {}. '.format(self.player.name)
             print '(1) Hit'
             print '(2) Stand'
@@ -139,30 +141,23 @@ class Game(object):
             try:
                 choice = int(raw_input('\nWhat do you want to do now? '))
 
-                # os.system('clear')
-                print choice
-
                 if choice not in (1,2,3,4,5):
                     continue
 
                 if choice == 1: 
                     self.player.hit(self.pack)
-                    self.player.show_hands()
-                    self.dealer.show_hands()
-                    
                     keep_playing = self.calculate()
                     if not keep_playing:
                         break
                 elif choice == 2: 
                     self.dealer.play(self.pack, self.player)
-                    if self.player.hands_length() > self.dealer.hands_length() or self.dealer.hands_length() > Game.max_length:
-                        print 'You win!'
+                    if self.player.hands_points() > self.dealer.hands_points() or self.dealer.hands_points() > Game.max_points:
+                        self.set_winner(self.player)
                         self.pay_player()
-                    elif self.dealer.hands_length() == self.player.hands_length():
-                        print 'Draw!'
+                    elif self.dealer.hands_points() == self.player.hands_points():
+                        self.set_winner(None)
                     else:
-                        print 'Busting!'
-                        print 'You lose.'
+                        self.set_winner(self.dealer)
                     break
                 
             except ValueError as e:
@@ -170,43 +165,54 @@ class Game(object):
                 pass
     
     def calculate(self):
-        if self.player.hands_length() > Game.max_length:
-            print 'Busting!'
-            print 'You lose.'
+        if self.player.hands_points() > Game.max_points:
+            self.set_winner(self.dealer)
             return False
-        elif self.player.hands_length() == Game.max_length:
+        elif self.player.hands_points() == Game.max_points:
             self.dealer.play(self.pack, self.player)
-            if self.dealer.hands_length() == Game.max_length:
-                print 'Draw!'
+            if self.dealer.hands_points() == Game.max_points:
+                self.set_winner(None)
             else:
-                print 'You win!'
+                self.set_winner(self.player)
                 self.pay_player()
 
             return False
         return True
 
+    def set_winner(self, winner):
+        self.winner = winner
+
+    def show_winner(self):
+        if self.winner == None:
+            print 'Draw!'
+        elif type(self.winner) == Player:
+            print 'Congratulations, {}, you win!'.format(self.player.name)
+        else:
+            print 'You lose.' 
+
     def pay_player(self):
         self.player.amount_money += self.player.current_bet * 2
 
     def start(self):
+        os.system('clear')
         self.pack = CardPack()
         self.player.make_a_bet()
 
         self.player.current_cards = self.pack.distribute()
         self.dealer.current_cards = self.pack.distribute()
         
-        self.player.show_hands()
-        self.dealer.show_hands()
-        
-        self.open_menu()      
+        self.draw_ui()      
 
 game = Game()
 
 while True:
     game.start()
 
+    os.system('clear')
     game.player.show_hands()
     game.dealer.show_hands(end_game=True)
+
+    game.show_winner()
 
     if not game.player.play_on():
         print 'Thanks for playing!'
