@@ -12,7 +12,7 @@ class Someone(object):
     def hit(self, pack):
         self.current_cards.append(pack.pop_card())
 
-    def show_hands(self, end_game=False):
+    def show_hands(self, hide_first=True):
         cards = self.current_cards[:] #making a copy of the original list
         total_cards = len(cards)
         hands_points = self.hands_points()
@@ -20,7 +20,7 @@ class Someone(object):
         if type(self) == Dealer: current = 'DEALER'
         else: current = 'PLAYER'
         
-        if type(self) == Dealer and not end_game:
+        if type(self) == Dealer and hide_first:
             hands_points = '? + {}'.format(cards[1].points)
             cards[0] = Card('?', '?', 0) 
 
@@ -133,7 +133,7 @@ class Game(object):
         choice = -1
         while True:
             Game.clear_output()
-            
+
             self.player.show_hands()
             self.dealer.show_hands()
 
@@ -164,10 +164,25 @@ class Game(object):
                     else:
                         self.set_winner(self.dealer)
                     break
+                elif choice == 5:
+                    if game.surrender():
+                        break
+                    continue
                 
             except ValueError as e:
                 print e
                 pass
+
+    def surrender(self):
+        confirm = None
+        while confirm not in ('', 'n', 'y'):
+            confirm = raw_input('You are about to surrender and lose half your bet. Confirm? (y/N): ').lower()
+
+        if confirm == 'y':
+            self.player.amount_money += self.player.current_bet / 2
+            self.set_winner(self.dealer)
+            return True
+        return False
     
     def calculate(self):
         if self.player.hands_points() > Game.MAX_POINTS:
@@ -223,7 +238,7 @@ while True:
     Game.clear_output()
 
     game.player.show_hands()
-    game.dealer.show_hands(end_game=True)
+    game.dealer.show_hands(hide_first=False)
 
     game.show_winner()
 
