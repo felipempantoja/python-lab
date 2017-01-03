@@ -25,11 +25,13 @@ Just a bunch of python code to learn a little bit this nice language...
 
 - [x] Create the game
 - [x] Validate invalid inputs
-- [ ] Prepare Ace card as a two-optionated value
-- [ ] Add more cards (there's just a single A-K spades sequence)
+- [x] Prepare Ace card as a two-optionated value
+- [x] Add more cards (there's just a single A-K spades sequence)
 - [x] Reward player after winning
 - [x] Show results in the end
-- [ ] Clear output after every move, showing redrawn board
+- [x] Clear output after every move, showing redrawn board
 - [x] Offer new game after current's end
+- [x] Improve UI
+- [ ] Fix mistakes when calculating the sum with Aces
 - [ ] Build the options 3 (Double Down), 4 (Split) and 5 (Surrender) on main menu
 - [ ] Refactoring messy code, duplicated ones and so on...
