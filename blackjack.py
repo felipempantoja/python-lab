@@ -45,7 +45,7 @@ class Someone(object):
         lst_aces_points = filter(lambda x: type(x) is tuple, card_points)
 
         sum_non_aces_points = sum(lst_non_aces_points)
-        sum_aces_points = len(lst_aces_points) * 11 # sum([ a[-1] for a in lst_aces_points ])
+        sum_aces_points = len(lst_aces_points) * 11
 
         sum_all = sum_aces_points + sum_non_aces_points
         
