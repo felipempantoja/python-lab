@@ -71,10 +71,6 @@ class Player(Someone):
         self.name = raw_input('Player name: ')
         self.current_bet = None
 
-    def play_on(self):
-        play_on = raw_input('\nPlay on (y/n): ')
-        return True if play_on == 'y' else False
-
     def has_money(self):
         return self.amount_money > 0
 
@@ -202,6 +198,12 @@ class Game(object):
     def pay_player(self):
         self.player.amount_money += self.player.current_bet * 2
 
+    def play_on(self):
+        play_on = None
+        while play_on not in ('', 'y', 'n'):
+            play_on = raw_input('\nPlay on (Y/n): ').lower()
+        return True if play_on in ('y', '') else False
+
     def start(self):
         Game.clear_output()
 
@@ -225,7 +227,7 @@ while True:
 
     game.show_winner()
 
-    if not game.player.play_on():
+    if not game.play_on():
         print 'Thanks for playing!'
         break
     if not game.player.has_money():
