@@ -3,6 +3,7 @@
 
 from random import randint
 import os
+import platform
 
 class Someone(object):
     def __init__(self):
@@ -43,21 +44,23 @@ class Someone(object):
         lst_non_aces_points = filter(lambda x: type(x) is not tuple, card_points)
         lst_aces_points = filter(lambda x: type(x) is tuple, card_points)
 
-        total_non_aces_points = sum(lst_non_aces_points)
-        total_aces_points = sum([ a[-1] for a in lst_aces_points ])
+        sum_non_aces_points = sum(lst_non_aces_points)
+        sum_aces_points = len(lst_aces_points) * 11 # sum([ a[-1] for a in lst_aces_points ])
 
-        total_all = total_aces_points + total_non_aces_points
+        sum_all = sum_aces_points + sum_non_aces_points
+        
+        used_max_aces_points = len(lst_aces_points)
 
-        while total_all > Game.max_points and total_aces_points > 0:
-            total_all -= 10
-            total_aces_points -= 1
+        while sum_all > Game.MAX_POINTS and used_max_aces_points > 0:
+            sum_all -= 10
+            used_max_aces_points -= 1
 
-        return total_all
+        return sum_all
     
 
 class Dealer(Someone):
     def play(self, pack, player):
-        while self.hands_points() < Game.max_points and self.hands_points() < player.hands_points() and pack.has_cards():
+        while self.hands_points() < Game.MAX_POINTS and self.hands_points() < player.hands_points() and pack.has_cards():
             self.hit(pack)
 
 class Player(Someone):
@@ -118,7 +121,12 @@ class CardPack(object):
 
 
 class Game(object):
-    max_points = 21
+    MAX_POINTS = 21
+
+    @staticmethod
+    def clear_output():
+        if platform.system() == 'Windows': os.system('cls')
+        else: os.system('clear')
 
     def __init__(self):
         self.dealer = Dealer()
@@ -128,7 +136,8 @@ class Game(object):
     def draw_ui(self):
         choice = -1
         while True:
-            os.system('clear')
+            Game.clear_output()
+            
             self.player.show_hands()
             self.dealer.show_hands()
 
@@ -151,7 +160,7 @@ class Game(object):
                         break
                 elif choice == 2: 
                     self.dealer.play(self.pack, self.player)
-                    if self.player.hands_points() > self.dealer.hands_points() or self.dealer.hands_points() > Game.max_points:
+                    if self.player.hands_points() > self.dealer.hands_points() or self.dealer.hands_points() > Game.MAX_POINTS:
                         self.set_winner(self.player)
                         self.pay_player()
                     elif self.dealer.hands_points() == self.player.hands_points():
@@ -165,12 +174,12 @@ class Game(object):
                 pass
     
     def calculate(self):
-        if self.player.hands_points() > Game.max_points:
+        if self.player.hands_points() > Game.MAX_POINTS:
             self.set_winner(self.dealer)
             return False
-        elif self.player.hands_points() == Game.max_points:
+        elif self.player.hands_points() == Game.MAX_POINTS:
             self.dealer.play(self.pack, self.player)
-            if self.dealer.hands_points() == Game.max_points:
+            if self.dealer.hands_points() == Game.MAX_POINTS:
                 self.set_winner(None)
             else:
                 self.set_winner(self.player)
@@ -194,7 +203,8 @@ class Game(object):
         self.player.amount_money += self.player.current_bet * 2
 
     def start(self):
-        os.system('clear')
+        Game.clear_output()
+
         self.pack = CardPack()
         self.player.make_a_bet()
 
@@ -208,7 +218,8 @@ game = Game()
 while True:
     game.start()
 
-    os.system('clear')
+    Game.clear_output()
+
     game.player.show_hands()
     game.dealer.show_hands(end_game=True)
 
